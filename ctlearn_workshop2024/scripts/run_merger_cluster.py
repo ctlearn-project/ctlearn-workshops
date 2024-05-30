@@ -19,9 +19,6 @@ def main():
     parser.add_argument('--pattern', '-p',
                         help='pattern to mask unwanted files',
                         default="*.h5")
-    parser.add_argument('--type',
-                        help='particle type',
-                        default="gamma")
     parser.add_argument('--num_outputfiles', '-n',
                         help='number of output files',
                         default=2,
@@ -36,13 +33,19 @@ def main():
     abs_file_dir = os.path.abspath(args.input_dir)
     input = np.sort(glob.glob(os.path.join(abs_file_dir, args.pattern)))
 
-    run_numbers = []
+    run_numbers, types = [], []
     for file in input:
-        run_numbers.append([int(s) for s in re.findall(r'\d+', file.split("/")[-1])][-4])
+        filename = file.split("/")[-1]
+        run_numbers.append([int(s) for s in re.findall(r'\d+', filename)][-4])
+        types.append(filename.split("_")[0])
     run_numbers = np.sort(run_numbers)
+    if len(np.unique(types)) == 1:
+        type = np.unique(types)[0]
+    else:
+        raise ValueError(f"Only merge files of the same particle type. Your inputs:'{types}'")
 
     for runs in np.array_split(run_numbers, args.num_outputfiles):
-        output_file = f"{args.output_dir}/{args.type}_theta_16.087_az_108.090_runs{runs[0]}-{runs[-1]}.r1.dl1.h5"
+        output_file = f"{args.output_dir}/{type}_theta_16.087_az_108.090_runs{runs[0]}-{runs[-1]}.r1.dl1.h5"
         print(f"Outputfile: '{output_file}'")
         cmd = [
              "sbatch",
@@ -57,7 +60,7 @@ def main():
              f"--output={output_file}",
             ]
         for run in runs:
-            cmd.append(f"{abs_file_dir}/{args.type}_theta_16.087_az_108.090_run{run}.r1.dl1.h5")
+            cmd.append(f"{abs_file_dir}/{type}_theta_16.087_az_108.090_run{run}.r1.dl1.h5")
         sp.run(cmd)
 
     return
