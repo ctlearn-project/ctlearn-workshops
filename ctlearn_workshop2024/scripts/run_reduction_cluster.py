@@ -37,6 +37,7 @@ def main():
     for file in files:
         print(f"Inputfile: '{file}'")
         output_file = f"{args.output_dir}/{file.split('/')[-1].replace('simtel_corsika', f'{args.type}').replace('simtel.gz', 'r1.dl1.h5')}"
+        #output_file = f"{args.output_dir}/{file.split('/')[-1].replace('simtel_corsika', f'{args.type}').replace('simtel.gz', 'r0.r1.dl1.h5')}"
         print(f"Outputfile: '{output_file}'")
         cmd = [
              "sbatch",
@@ -50,6 +51,7 @@ def main():
              f"--config={args.config}",
              "--write-images",
              "--write-parameters",
+             #f"--DataWriter.write_raw_waveforms=True",
              f"--DataWriter.write_waveforms=True"
             ]
         sp.run(cmd)
